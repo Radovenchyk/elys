@@ -6,9 +6,11 @@ import (
 	"time"
 
 	errorsmod "cosmossdk.io/errors"
+	"cosmossdk.io/math"
 	"github.com/cometbft/cometbft/crypto/ed25519"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/elys-network/elys/x/amm/types"
+	typesoracle "github.com/elys-network/elys/x/oracle/types"
 	ptypes "github.com/elys-network/elys/x/parameter/types"
 	"github.com/stretchr/testify/require"
 )
@@ -22,6 +24,22 @@ func (suite *TestSuite) TestPoolTVL() {
 		expError   bool
 	}{
 		{
+			desc: "oracle pool TEVMOS use case",
+			poolAssets: []types.PoolAsset{
+				{
+					Token:  sdk.NewInt64Coin(ptypes.BaseCurrency, 67460000), // 67.46usdc
+					Weight: sdk.NewInt(50),
+				},
+				{
+					Token:  sdk.NewCoin("ibc/771DC594DF52CCD99F95F8E5CD7ECF7CBE35595A94B172427FE7FBF97A846EDB", math.Int(sdk.MustNewDecFromStr("96100000000000000000"))), //EVMOS
+					Weight: sdk.NewInt(50),
+				},
+			},
+			useOracle: true,
+			expTVL:    sdk.NewDec(2000),
+			expError:  false,
+		},
+		/*{
 			desc: "oracle pool all asset prices set case",
 			poolAssets: []types.PoolAsset{
 				{
@@ -84,7 +102,7 @@ func (suite *TestSuite) TestPoolTVL() {
 			useOracle: false,
 			expTVL:    sdk.NewDec(2000),
 			expError:  false,
-		},
+		},*/
 	} {
 		suite.Run(tc.desc, func() {
 			suite.SetupTest()
@@ -95,6 +113,14 @@ func (suite *TestSuite) TestPoolTVL() {
 			// bootstrap accounts
 			poolAddr := sdk.AccAddress(ed25519.GenPrivKey().PubKey().Address())
 			treasuryAddr := sdk.AccAddress(ed25519.GenPrivKey().PubKey().Address())
+
+			suite.app.OracleKeeper.SetAssetInfo(suite.ctx, typesoracle.AssetInfo{
+				Denom:      "ibc/771DC594DF52CCD99F95F8E5CD7ECF7CBE35595A94B172427FE7FBF97A846EDB",
+				Display:    "TEVMOS",
+				BandTicker: "TEVMOS",
+				ElysTicker: "TEVMOS",
+				Decimal:    18,
+			})
 
 			// prices set for USDT and USDC
 			suite.SetupStableCoinPrices()

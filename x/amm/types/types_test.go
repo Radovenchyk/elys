@@ -63,6 +63,16 @@ func (suite *TestSuite) SetupStableCoinPrices() {
 		Provider:  provider.String(),
 		Timestamp: uint64(suite.ctx.BlockTime().Unix()),
 	})
+
+	priceTevmos, _ := sdk.NewDecFromStr("0.033459255615940300")
+
+	suite.app.OracleKeeper.SetPrice(suite.ctx, oracletypes.Price{
+		Asset:     "TEVMOS",
+		Price:     priceTevmos,
+		Source:    "elys",
+		Provider:  provider.String(),
+		Timestamp: uint64(suite.ctx.BlockTime().Unix()),
+	})
 }
 
 func TestKeeperSuite(t *testing.T) {
