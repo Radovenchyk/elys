@@ -4,6 +4,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/elys-network/elys/x/oracle/types"
+	"github.com/elys-network/elys/x/tier/keeper"
 )
 
 // SetPrice set a specific price in the store from its index
@@ -124,6 +125,21 @@ func Pow10(decimal uint64) (value sdk.Dec) {
 	return
 }
 
+func (k Keeper) GetAssetPriceAndDecimalFromDenom(ctx sdk.Context, denom string) (sdk.Dec, sdk.Dec) {
+	info, found := k.GetAssetInfo(ctx, denom)
+	if !found {
+		return sdk.ZeroDec(), sdk.ZeroDec()
+	}
+	price, found := k.GetAssetPrice(ctx, info.Display)
+	if !found {
+		return sdk.ZeroDec(), sdk.ZeroDec()
+	}
+
+	pow := keeper.Pow10(info.Decimal)
+
+	return price.Price, pow
+}
+
 func (k Keeper) GetAssetPriceFromDenom(ctx sdk.Context, denom string) sdk.Dec {
 	info, found := k.GetAssetInfo(ctx, denom)
 	if !found {
@@ -133,5 +149,6 @@ func (k Keeper) GetAssetPriceFromDenom(ctx sdk.Context, denom string) sdk.Dec {
 	if !found {
 		return sdk.ZeroDec()
 	}
+
 	return price.Price.Quo(Pow10(info.Decimal))
 }

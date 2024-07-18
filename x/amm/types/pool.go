@@ -276,14 +276,16 @@ func (p *Pool) TVL(ctx sdk.Context, oracleKeeper OracleKeeper) (sdk.Dec, error) 
 	totalWeight := sdk.ZeroInt()
 	oracleAssetsWeight := sdk.ZeroInt()
 	for _, asset := range p.PoolAssets {
-		tokenPrice := oracleKeeper.GetAssetPriceFromDenom(ctx, asset.Token.Denom)
+		//tokenPrice := oracleKeeper.GetAssetPriceFromDenom(ctx, asset.Token.Denom)
+		tokenPrice, pow := oracleKeeper.GetAssetPriceAndDecimalFromDenom(ctx, asset.Token.Denom)
 		totalWeight = totalWeight.Add(asset.Weight)
 		if tokenPrice.IsZero() {
 			if p.PoolParams.UseOracle {
 				return sdk.ZeroDec(), fmt.Errorf("token price not set: %s", asset.Token.Denom)
 			}
 		} else {
-			v := tokenPrice.Mul(sdk.NewDecFromInt(asset.Token.Amount))
+			v := tokenPrice.Mul(sdk.NewDecFromInt(asset.Token.Amount)).Quo(pow)
+			//v := tokenPrice.Mul(sdk.NewDecFromInt(asset.Token.Amount))
 			oracleAssetsTVL = oracleAssetsTVL.Add(v)
 			oracleAssetsWeight = oracleAssetsWeight.Add(asset.Weight)
 		}

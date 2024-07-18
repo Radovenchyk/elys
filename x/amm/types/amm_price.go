@@ -27,11 +27,11 @@ func (p *Pool) GetTokenARate(
 		), nil
 	}
 
-	priceA := oracleKeeper.GetAssetPriceFromDenom(ctx, tokenA)
+	priceA, _ := oracleKeeper.GetAssetPriceAndDecimalFromDenom(ctx, tokenA)
 	if priceA.IsZero() {
 		return sdk.ZeroDec(), fmt.Errorf("token price not set: %s", tokenA)
 	}
-	priceB := oracleKeeper.GetAssetPriceFromDenom(ctx, tokenB)
+	priceB, _ := oracleKeeper.GetAssetPriceAndDecimalFromDenom(ctx, tokenB)
 	if priceB.IsZero() {
 		return sdk.ZeroDec(), fmt.Errorf("token price not set: %s", tokenB)
 	}

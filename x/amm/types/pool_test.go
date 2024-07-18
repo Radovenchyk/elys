@@ -16,6 +16,9 @@ import (
 )
 
 func (suite *TestSuite) TestPoolTVL() {
+
+	tvlTevmos, _ := sdk.NewDecFromStr("3215434464691862897.460000000000000000")
+
 	for _, tc := range []struct {
 		desc       string
 		poolAssets []types.PoolAsset
@@ -36,10 +39,10 @@ func (suite *TestSuite) TestPoolTVL() {
 				},
 			},
 			useOracle: true,
-			expTVL:    sdk.NewDec(2000),
+			expTVL:    tvlTevmos,
 			expError:  false,
 		},
-		/*{
+		{
 			desc: "oracle pool all asset prices set case",
 			poolAssets: []types.PoolAsset{
 				{
@@ -102,7 +105,7 @@ func (suite *TestSuite) TestPoolTVL() {
 			useOracle: false,
 			expTVL:    sdk.NewDec(2000),
 			expError:  false,
-		},*/
+		},
 	} {
 		suite.Run(tc.desc, func() {
 			suite.SetupTest()

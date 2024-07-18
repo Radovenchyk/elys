@@ -33,12 +33,12 @@ func OraclePoolNormalizedWeights(ctx sdk.Context, oracleKeeper OracleKeeper, poo
 	oraclePoolWeights := []AssetWeight{}
 	totalWeight := sdk.ZeroDec()
 	for _, asset := range poolAssets {
-		tokenPrice := oracleKeeper.GetAssetPriceFromDenom(ctx, asset.Token.Denom)
+		tokenPrice, pow := oracleKeeper.GetAssetPriceAndDecimalFromDenom(ctx, asset.Token.Denom)
 		if tokenPrice.IsZero() {
 			return oraclePoolWeights, fmt.Errorf("price for token not set: %s", asset.Token.Denom)
 		}
 
-		weight := tokenPrice.Mul(sdk.NewDecFromInt(asset.Token.Amount))
+		weight := tokenPrice.Mul(sdk.NewDecFromInt(asset.Token.Amount)).Quo(pow)
 		oraclePoolWeights = append(oraclePoolWeights, AssetWeight{
 			Asset:  asset.Token.Denom,
 			Weight: weight,
