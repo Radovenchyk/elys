@@ -9,13 +9,17 @@ import (
 func (k Keeper) TVL(ctx sdk.Context, oracleKeeper types.OracleKeeper, baseCurrency string) math.LegacyDec {
 	params := k.GetParams(ctx)
 	totalDeposit := params.TotalValue
-	price := oracleKeeper.GetAssetPriceFromDenom(ctx, baseCurrency)
-	return price.MulInt(totalDeposit)
+	//price := oracleKeeper.GetAssetPriceFromDenom(ctx, baseCurrency)
+	//return price.MulInt(totalDeposit)
+	price, pow := oracleKeeper.GetAssetPriceAndDecimalFromDenom(ctx, baseCurrency)
+	return price.MulInt(totalDeposit).Quo(pow)
 }
 
 func (k Keeper) ShareDenomPrice(ctx sdk.Context, oracleKeeper types.OracleKeeper, baseCurrency string) math.LegacyDec {
 	params := k.GetParams(ctx)
 	redemptionRate := params.RedemptionRate
-	price := oracleKeeper.GetAssetPriceFromDenom(ctx, baseCurrency)
-	return price.Mul(redemptionRate)
+	//price := oracleKeeper.GetAssetPriceFromDenom(ctx, baseCurrency)
+	//return price.Mul(redemptionRate)
+	price, pow := oracleKeeper.GetAssetPriceAndDecimalFromDenom(ctx, baseCurrency)
+	return price.Mul(redemptionRate).Quo(pow)
 }
