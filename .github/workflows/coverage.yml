@@ -1,0 +1,43 @@
+name: Code Coverage Check
+
+on:
+  push:
+    branches: [ avkr003/cc ]
+  pull_request:
+    branches: [ avkr003/cc ]
+
+jobs:
+  test-coverage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: '1.21'  # Adjust this to match your project's Go version
+
+      - name: Install dependencies
+        run: go mod download
+
+      - name: Run tests with coverage
+        run: |
+          go test -v -coverprofile=coverage.out ./...
+          go tool cover -func=coverage.out
+
+      - name: Check keeper package coverage
+        run: |
+          modules=$(find . -type d -name "x" -not -path "*/vendor/*")
+          for module in $modules; do
+            keeper_coverage=$(go tool cover -func=coverage.out | grep "${module}/keeper" | awk '{print $3}' | sed 's/%//')
+            if (( $(echo "$keeper_coverage < 90" | bc -l) )); then
+              echo "Coverage for ${module}/keeper is below 90%: ${keeper_coverage}%"
+              exit 1
+            fi
+          done
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage-report
+          path: coverage.out
