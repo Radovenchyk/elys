@@ -7,6 +7,7 @@ on:
       - develop
       - devnet
       - main
+      - avkr003/cc
 
 jobs:
   test:
@@ -31,3 +32,19 @@ jobs:
         uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
+          file: ./coverage.txt
+          flags: unittests
+          name: codecov-umbrella
+          fail_ci_if_error: true
+          verbose: true
+
+      - name: Check keeper package coverage
+        run: |
+          modules=$(find . -type d -name "x" -not -path "*/vendor/*")
+          for module in $modules; do
+            keeper_coverage=$(go tool cover -func=coverage.txt | grep "${module}/keeper" | awk '{print $3}' | sed 's/%//')
+            if (( $(echo "$keeper_coverage < 90" | bc -l) )); then
+              echo "Coverage for ${module}/keeper is below 90%: ${keeper_coverage}%"
+              exit 1
+            fi
+          done
