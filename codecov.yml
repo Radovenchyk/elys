@@ -1,8 +1,29 @@
 comment:
-  layout: "header, diff, flags, components" # show component info in the PR comment
+  layout: "header, diff, flags, components, reach, files" # show component info in the PR comment
+  behavior: default
+  require_changes: false
+
+coverage:
+  status:
+    project:
+      default:
+        target: auto
+        threshold: 1%
+    patch:
+      default:
+        target: 80%
+
+  flags:
+    keeper:
+      paths:
+        - "x/**/keeper/"
+      target: 90%
 
 ignore:
   - "**/*.pb*"
+  - "**/*_test.go"
+  - "**/mock/**"
+  - "**/testutil/**"
 
 component_management:
   default_rules: # default rules that will be inherited by all components
