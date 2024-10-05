@@ -40,17 +40,21 @@ jobs:
 
       - name: Check keeper package coverage
         run: |
-          modules=$(find . -type d -name "x" -not -path "*/vendor/*")
-          for module in $modules; do
-            keeper_coverage=$(go tool cover -func=coverage.txt | grep "${module}/keeper" | awk '{gsub("%", "", $3); print $3}')
+          echo "Searching for keeper packages:"
+          find . -type d -path "*/x/*/keeper" -not -path "*/vendor/*"
+          
+          keeper_packages=$(find . -type d -path "*/x/*/keeper" -not -path "*/vendor/*")
+          for keeper in $keeper_packages; do
+            echo "Checking keeper package: $keeper"
+            keeper_coverage=$(go tool cover -func=coverage.txt | grep "$keeper" | awk '{sum += $3; count++} END {if (count > 0) print sum / count; else print 0}')
             if [ -n "$keeper_coverage" ]; then
               if awk 'BEGIN {exit !('$keeper_coverage' < 90)}'; then
-                echo "Coverage for ${module}/keeper is below 90%: ${keeper_coverage}%"
+                echo "Coverage for $keeper is below 90%: ${keeper_coverage}%"
                 exit 1
               else
-                echo "Coverage for ${module}/keeper is ${keeper_coverage}% (meets 90% requirement)"
+                echo "Coverage for $keeper is ${keeper_coverage}% (meets 90% requirement)"
               fi
             else
-              echo "No coverage data found for ${module}/keeper"
+              echo "No coverage data found for $keeper"
             fi
           done
