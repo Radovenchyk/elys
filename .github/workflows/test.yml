@@ -42,9 +42,15 @@ jobs:
         run: |
           modules=$(find . -type d -name "x" -not -path "*/vendor/*")
           for module in $modules; do
-            keeper_coverage=$(go tool cover -func=coverage.txt | grep "${module}/keeper" | awk '{print $3}' | sed 's/%//')
-            if (( $(echo "$keeper_coverage < 90" | bc -l) )); then
-              echo "Coverage for ${module}/keeper is below 90%: ${keeper_coverage}%"
-              exit 1
+            keeper_coverage=$(go tool cover -func=coverage.txt | grep "${module}/keeper" | awk '{gsub("%", "", $3); print $3}')
+            if [ -n "$keeper_coverage" ]; then
+              if awk 'BEGIN {exit !('$keeper_coverage' < 90)}'; then
+                echo "Coverage for ${module}/keeper is below 90%: ${keeper_coverage}%"
+                exit 1
+              else
+                echo "Coverage for ${module}/keeper is ${keeper_coverage}% (meets 90% requirement)"
+              fi
+            else
+              echo "No coverage data found for ${module}/keeper"
             fi
           done
