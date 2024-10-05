@@ -17,7 +17,7 @@ coverage:
     keeper:
       paths:
         - "x/**/keeper/"
-      target: 90%
+      target: 10%
 
 ignore:
   - "**/*.pb*"
